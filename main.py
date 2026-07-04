@@ -48,10 +48,6 @@ previous_altitudes = {} # used to track previous atltitude for getting angle cli
 seen_flight_ids = set()
 first_loop = True
 
-
-
-
-
 def compute_incline_angle(flight_id, current_altitude_ft, ground_speed_kt):
     """
     Compares altitude now vs altitude ~3 seconds ago for this flight,
