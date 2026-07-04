@@ -49,14 +49,15 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
             else:
                 print(f"Found {len(flights)} flight(s). Fetching details...\n")
                 current_ids = set()
-
+                new_flight_detected = False
+                
                 for flight in flights:
                     current_ids.add(flight.id)
                     
                     if not first_loop and flight.id not in seen_flight_ids:
+                        new_flight_detected = True
                         print(f"[INFO] New flight entered radius: {flight.id}")
                         print("-" * 40)
-                        play_alert()
                         
                     try:
                         details = fr_api.get_flight_details(flight)
@@ -86,6 +87,9 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
                         print(f"Altitude: {altitude} ft")
                         print(f"Incline/Descent: {incline_label}")
                         print("-" * 40)
+                
+                if new_flight_detected:
+                    play_alert()
 
                 seen_flight_ids.update(current_ids)
                 first_loop = False
@@ -94,7 +98,6 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
             print(f"Error fetching active flight list: {inner_e}")
 
         time.sleep(3)
-    
     
 def play_alert():
     if IS_WINDOWS:
