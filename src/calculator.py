@@ -2,7 +2,7 @@ import time
 import math
 
 NM_TO_FT = 6076.12
-ANGLE_THRESHOLD_DEG = 0.5  # below this, treat as level flight
+ANGLE_THRESHOLD_DEG = 0.3  # below this, treat as level flight
 
 previous_altitudes = {}  # used to track previous atltitude for getting angle climb/descent
 
