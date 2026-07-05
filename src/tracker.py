@@ -1,4 +1,5 @@
 import time
+import platform
 import logging
 
 from FlightRadarAPI import FlightRadar24API
@@ -10,6 +11,12 @@ from src.calculator import compute_incline_angle
 # so FlightRadarAPI own gzip.decompress() call fails on already-decoded
 # bytes and logs a warning
 # the data is fine so we only silence it
+
+# Check the operating system once at startup.
+IS_WINDOWS = platform.system() == "Windows"
+if IS_WINDOWS:
+    import winsound
+    
 logging.getLogger("FlightRadarAPI.request").setLevel(logging.ERROR)
 
 fr_api = FlightRadar24API()
@@ -35,17 +42,23 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
             timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
             print(f"[{timestamp}] Refreshing radar data...")
             flights = fr_api.get_flights(bounds=bounds)
-
+            
             if not flights:
                 print(f"No flights currently found within {radius_meters}m radius of {airport_name}.")
                 print("-" * 40)
             else:
                 print(f"Found {len(flights)} flight(s). Fetching details...\n")
                 current_ids = set()
-
+                new_flight_detected = False
+                
                 for flight in flights:
                     current_ids.add(flight.id)
-
+                    
+                    if not first_loop and flight.id not in seen_flight_ids:
+                        new_flight_detected = True
+                        print(f"[INFO] New flight entered radius: {flight.id}")
+                        print("-" * 40)
+                        
                     try:
                         details = fr_api.get_flight_details(flight)
                         flight.set_flight_details(details)
@@ -74,6 +87,9 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
                         print(f"Altitude: {altitude} ft")
                         print(f"Incline/Descent: {incline_label}")
                         print("-" * 40)
+                
+                if new_flight_detected:
+                    play_alert()
 
                 seen_flight_ids.update(current_ids)
                 first_loop = False
@@ -82,3 +98,9 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
             print(f"Error fetching active flight list: {inner_e}")
 
         time.sleep(3)
+    
+def play_alert():
+    if IS_WINDOWS:
+        winsound.MessageBeep()
+    else:
+        print("\a", end="", flush=True)
