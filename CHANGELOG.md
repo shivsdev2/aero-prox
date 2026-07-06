@@ -18,3 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - improved code base for robustness 
+
+## [1.1.0] - 2026-07-06
+
+### Added
+- **Automated Test Suite:** Introduced a comprehensive unit testing framework using `pytest` located in the new `tests/` directory.
+- **Calculator Tests:** Added `test_calculator.py` to handle test assertions for level flight, climbing, descending, and boundary mathematical edge cases (like zero or negative ground speeds).
+- **Tracker Mocking:** Added `test_tracker.py` using `unittest.mock` to simulate real-time FlightRadar24 API data streams, platform-specific audio alerts, and error propagation boundaries without triggering live network calls.
+- **Shared Test Configuration:** Implemented a unified `conftest.py` with auto-triggering execution fixtures to isolate test environments and thoroughly scrub cache metrics between test runs.
+- **Test Optimization:** Added a global `pytest.ini` structure to configure baseline regression testing defaults.
