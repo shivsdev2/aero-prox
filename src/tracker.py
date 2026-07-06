@@ -5,6 +5,7 @@ import time
 from FlightRadarAPI import FlightRadar24API
 
 from src.calculator import compute_incline_angle
+from src.flight_logger import FlightLogger
 
 # Silence a harmless "failed to decode Content-Encoding=gzip" warning.
 # curl_cffi already auto-decompresses responses, so FlightRadarAPI's own
@@ -78,7 +79,7 @@ def _print_flight(name, departure_airport, aircraft_type, altitude, incline_labe
     print(SEPARATOR)
 
 
-def _poll_once(bounds, airport_name, radius_meters):
+def _poll_once(bounds, airport_name, radius_meters, logger: FlightLogger | None = None):
     """Run a single fetch-and-report cycle. Returns nothing; mutates module state."""
     global first_loop
 
@@ -111,6 +112,20 @@ def _poll_once(bounds, airport_name, radius_meters):
         )
         _print_flight(name, departure_airport, aircraft_type, altitude, incline_label)
 
+        # Log to CSV if a logger is available
+        if logger is not None:
+            ground_speed = getattr(flight, "ground_speed", None)
+            logger.log(
+                timestamp=timestamp,
+                flight_id=flight.id,
+                callsign=name,
+                departure_airport=departure_airport,
+                aircraft_type=aircraft_type,
+                altitude=altitude,
+                ground_speed=ground_speed,
+                incline_label=incline_label,
+            )
+
     if new_flight_detected:
         play_alert()
 
@@ -123,13 +138,17 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
     1) Create a box around the given airport
     2) Get flights within those bounds
     3) Get info for each flight (callsign, departure airport, aircraft type)
-    4) Loop every few seconds
+    4) Log every flight to a CSV file
+    5) Loop every few seconds
     """
+    logger = FlightLogger(airport_name)
+    log.info("Flight history CSV: %s", logger.filepath)
+
     bounds = fr_api.get_bounds_by_point(airport_lat, airport_lon, radius_meters)
 
     while True:
         try:
-            _poll_once(bounds, airport_name, radius_meters)
+            _poll_once(bounds, airport_name, radius_meters, logger=logger)
         except Exception as inner_e:
             print(f"Error fetching active flight list: {inner_e}")
 

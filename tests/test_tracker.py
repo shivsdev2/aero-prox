@@ -173,6 +173,7 @@ class TestRunTracking:
         with (
             patch("src.tracker.time.sleep"),
             patch("src.tracker._poll_once", side_effect=stop_after_one),
+            patch("src.tracker.FlightLogger"),  # avoid actual file I/O
         ):
             try:
                 run_tracking(23.3, 85.3, "Test", 5000)
@@ -195,6 +196,7 @@ class TestRunTracking:
         with (
             patch("src.tracker.time.sleep"),
             patch("src.tracker._poll_once", side_effect=raise_then_stop),
+            patch("src.tracker.FlightLogger"),  # avoid actual file I/O
         ):
             try:
                 run_tracking(23.3, 85.3, "Test", 5000)

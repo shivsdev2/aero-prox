@@ -4,7 +4,8 @@ Unit tests for main.py.
 Tests cover:
 - prompt_airport: valid ICAO, invalid ICAO retry, case-insensitivity
 - prompt_radius: valid positive integer, invalid input retry
-- main(): end-to-end flow with mocked dependencies
+- parse_args: CLI argument parsing
+- main(): end-to-end flow with mocked dependencies, including CLI args
 - KeyboardInterrupt handling
 - Unexpected exception handling
 """
@@ -13,7 +14,40 @@ from unittest.mock import patch
 
 import pytest
 
-from main import prompt_airport, prompt_radius
+from main import parse_args, prompt_airport, prompt_radius
+
+
+class TestParseArgs:
+    """Tests for the parse_args function."""
+
+    def test_no_args_returns_defaults(self):
+        """No arguments should result in None defaults."""
+        args = parse_args([])
+        assert args.icao is None
+        assert args.radius is None
+
+    def test_icao_only(self):
+        """Only --icao provided."""
+        args = parse_args(["--icao", "VERC"])
+        assert args.icao == "VERC"
+        assert args.radius is None
+
+    def test_radius_only(self):
+        """Only --radius provided."""
+        args = parse_args(["--radius", "5000"])
+        assert args.icao is None
+        assert args.radius == 5000
+
+    def test_both_args(self):
+        """Both --icao and --radius provided."""
+        args = parse_args(["--icao", "KJFK", "--radius", "10000"])
+        assert args.icao == "KJFK"
+        assert args.radius == 10000
+
+    def test_radius_string_rejected(self):
+        """argparse should reject non-integer radius."""
+        with pytest.raises(SystemExit):
+            parse_args(["--radius", "abc"])
 
 
 class TestPromptAirport:
@@ -108,6 +142,7 @@ class TestMainFunction:
             patch("main.airportsdata.load", mock_airportsdata),
             patch("builtins.input", side_effect=["VERC", "5000"]),
             patch("main.run_tracking") as mock_run_tracking,
+            patch("main.sys.argv", ["prog"]),
         ):
             from main import main
 
@@ -127,6 +162,7 @@ class TestMainFunction:
             patch("main.airportsdata.load", mock_airportsdata),
             patch("builtins.input", side_effect=["VERC", "5000"]),
             patch("main.run_tracking", side_effect=KeyboardInterrupt),
+            patch("main.sys.argv", ["prog"]),
         ):
             from main import main
 
@@ -141,6 +177,7 @@ class TestMainFunction:
             patch("main.airportsdata.load", mock_airportsdata),
             patch("builtins.input", side_effect=["VERC", "5000"]),
             patch("main.run_tracking", side_effect=RuntimeError("boom")),
+            patch("main.sys.argv", ["prog"]),
             pytest.raises(SystemExit) as exc_info,
         ):
             from main import main
@@ -148,3 +185,77 @@ class TestMainFunction:
             main()
 
         assert exc_info.value.code == 1
+
+    # ------------------------------------------------------------------
+    # Tests for CLI argument usage
+    # ------------------------------------------------------------------
+
+    def test_main_with_cli_args(self, mock_airportsdata, mock_fr_api):
+        """
+        main() should accept --icao and --radius via sys.argv
+        and skip interactive prompts.
+        """
+        test_argv = ["prog", "--icao", "VERC", "--radius", "8000"]
+        with (
+            patch("main.airportsdata.load", mock_airportsdata),
+            patch("main.run_tracking") as mock_run_tracking,
+            patch("main.sys.argv", test_argv),
+        ):
+            from main import main
+
+            main()
+
+        mock_run_tracking.assert_called_once()
+        args, _ = mock_run_tracking.call_args
+        lat, lon, name, radius = args
+        assert lat == 23.3147
+        assert lon == 85.3217
+        assert name == "Birsa Munda Airport"
+        assert radius == 8000
+
+    def test_main_with_invalid_icao_cli_exits(self, mock_airportsdata):
+        """main() should exit with error if --icao is not found."""
+        test_argv = ["prog", "--icao", "ZZZZ", "--radius", "5000"]
+        with (
+            patch("main.airportsdata.load", mock_airportsdata),
+            patch("main.sys.argv", test_argv),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            from main import main
+
+            main()
+
+        assert exc_info.value.code == 1
+
+    def test_main_with_invalid_radius_cli_exits(self, mock_airportsdata):
+        """main() should exit with error if --radius is zero or negative."""
+        test_argv = ["prog", "--icao", "VERC", "--radius", "0"]
+        with (
+            patch("main.airportsdata.load", mock_airportsdata),
+            patch("main.sys.argv", test_argv),
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            from main import main
+
+            main()
+
+        assert exc_info.value.code == 1
+
+    def test_main_with_cli_icao_only_interactive_radius(
+        self, mock_airportsdata, mock_fr_api
+    ):
+        """--icao supplied, but --radius should fall back to interactive prompt."""
+        test_argv = ["prog", "--icao", "VERC"]
+        with (
+            patch("main.airportsdata.load", mock_airportsdata),
+            patch("builtins.input", return_value="12000"),
+            patch("main.run_tracking") as mock_run_tracking,
+            patch("main.sys.argv", test_argv),
+        ):
+            from main import main
+
+            main()
+
+        mock_run_tracking.assert_called_once()
+        args, _ = mock_run_tracking.call_args
+        assert args[3] == 12000

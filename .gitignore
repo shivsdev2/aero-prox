@@ -5,3 +5,4 @@ __pycache__/
 .eggs/
 .pre-commit-config.yaml.bak
 .ruff_cache/
+flight_logs/

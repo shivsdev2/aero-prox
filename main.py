@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 try:
@@ -35,11 +36,49 @@ def prompt_radius() -> int:
             print("Please enter a positive whole number.\n")
 
 
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    """Parse CLI arguments, falling back to interactive prompts when omitted."""
+    parser = argparse.ArgumentParser(
+        description="Track active flights within a specified radius of any airport.",
+    )
+    parser.add_argument(
+        "--icao",
+        type=str,
+        default=None,
+        metavar="CODE",
+        help="ICAO code of the airport (e.g. VERC for Ranchi). Prompts interactively if omitted.",
+    )
+    parser.add_argument(
+        "--radius",
+        type=int,
+        default=None,
+        metavar="METERS",
+        help="Radius in meters around the airport. Prompts interactively if omitted.",
+    )
+    return parser.parse_args(argv)
+
+
 def main() -> None:
+    args = parse_args()
+
     airports = airportsdata.load("ICAO")
 
-    airport = prompt_airport(airports)
-    radius_meters = prompt_radius()
+    if args.icao:
+        icao_code = args.icao.strip().upper()
+        airport = airports.get(icao_code)
+        if not airport:
+            print(f"Error: ICAO code '{icao_code}' not found.")
+            sys.exit(1)
+    else:
+        airport = prompt_airport(airports)
+
+    if args.radius is not None:
+        radius_meters = args.radius
+        if radius_meters <= 0:
+            print("Error: radius must be a positive integer.")
+            sys.exit(1)
+    else:
+        radius_meters = prompt_radius()
 
     airport_name = airport["name"]
     airport_lat = airport["lat"]

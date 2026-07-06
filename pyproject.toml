@@ -4,7 +4,7 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
 name = "aero-prox"
-version = "1.1.1"
+version = "1.2.0"
 description = "Track active flights within a specified radius of any airport using the FlightRadar24 API"
 readme = "README.md"
 license = {text = "GPL-3.0-only"}
