@@ -6,6 +6,7 @@ from FlightRadarAPI import FlightRadar24API
 
 from src.calculator import compute_incline_angle
 from src.flight_logger import FlightLogger
+from src.sky_compass import generate_compass_report
 
 # Silence a harmless "failed to decode Content-Encoding=gzip" warning.
 # curl_cffi already auto-decompresses responses, so FlightRadarAPI's own
@@ -79,7 +80,14 @@ def _print_flight(name, departure_airport, aircraft_type, altitude, incline_labe
     print(SEPARATOR)
 
 
-def _poll_once(bounds, airport_name, radius_meters, logger: FlightLogger | None = None):
+def _poll_once(
+    bounds,
+    airport_lat,
+    airport_lon,
+    airport_name,
+    radius_meters,
+    logger: FlightLogger | None = None,
+):
     """Run a single fetch-and-report cycle. Returns nothing; mutates module state."""
     global first_loop
 
@@ -110,6 +118,10 @@ def _poll_once(bounds, airport_name, radius_meters, logger: FlightLogger | None 
         name, departure_airport, aircraft_type, altitude, incline_label = (
             _get_flight_details(flight)
         )
+
+        # Attach incline label to the flight object for Sky Compass.
+        flight._incline_label = incline_label
+
         _print_flight(name, departure_airport, aircraft_type, altitude, incline_label)
 
         # Log to CSV if a logger is available
@@ -128,6 +140,11 @@ def _poll_once(bounds, airport_name, radius_meters, logger: FlightLogger | None 
 
     if new_flight_detected:
         play_alert()
+
+    # Print the Sky Compass report.
+    report = generate_compass_report(airport_lat, airport_lon, airport_name, flights)
+    print(report)
+    print(SEPARATOR)
 
     seen_flight_ids.update(current_ids)
     first_loop = False
@@ -148,7 +165,14 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
 
     while True:
         try:
-            _poll_once(bounds, airport_name, radius_meters, logger=logger)
+            _poll_once(
+                bounds,
+                airport_lat,
+                airport_lon,
+                airport_name,
+                radius_meters,
+                logger=logger,
+            )
         except Exception as inner_e:
             print(f"Error fetching active flight list: {inner_e}")
 

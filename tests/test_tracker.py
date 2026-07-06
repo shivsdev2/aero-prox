@@ -86,7 +86,7 @@ class TestPollOnce:
     def test_no_flights(self, mock_fr_api, capsys):
         """When no flights are returned, an appropriate message should be printed."""
         mock_fr_api.get_flights.return_value = []
-        _poll_once(MagicMock(), "Test Airport", 5000)
+        _poll_once(MagicMock(), 23.3, 85.3, "Test Airport", 5000)
         captured = capsys.readouterr()
         assert "No flights" in captured.out
         assert "Test Airport" in captured.out
@@ -95,7 +95,7 @@ class TestPollOnce:
         """When flights are returned, their details should be printed."""
         mock_fr_api.get_flights.return_value = [mock_flight]
         mock_fr_api.get_flight_details.return_value = MagicMock()
-        _poll_once(MagicMock(), "Test Airport", 5000)
+        _poll_once(MagicMock(), 23.3, 85.3, "Test Airport", 5000)
         captured = capsys.readouterr()
         assert "AI123" in captured.out
         assert "Refreshing radar data" in captured.out
@@ -105,7 +105,7 @@ class TestPollOnce:
         # First poll: populate seen_flight_ids
         mock_fr_api.get_flights.return_value = [mock_flight]
         mock_fr_api.get_flight_details.return_value = MagicMock()
-        _poll_once(MagicMock(), "Test Airport", 5000)
+        _poll_once(MagicMock(), 23.3, 85.3, "Test Airport", 5000)
 
         # Second poll with a different flight
         new_flight = MagicMock(
@@ -121,7 +121,7 @@ class TestPollOnce:
         )
         mock_fr_api.get_flights.return_value = [new_flight]
         captured = capsys.readouterr()  # discard first poll output
-        _poll_once(MagicMock(), "Test Airport", 5000)
+        _poll_once(MagicMock(), 23.3, 85.3, "Test Airport", 5000)
         captured = capsys.readouterr()
         assert "New flight entered radius" in captured.out
         assert "new_flight_456" in captured.out
@@ -130,7 +130,7 @@ class TestPollOnce:
         """_poll_once does not catch API errors - they propagate to run_tracking."""
         mock_fr_api.get_flights.side_effect = RuntimeError("Network error")
         with pytest.raises(RuntimeError, match="Network error"):
-            _poll_once(MagicMock(), "Test Airport", 5000)
+            _poll_once(MagicMock(), 23.3, 85.3, "Test Airport", 5000)
 
     def test_new_flight_alert_plays_sound(self, mock_fr_api, mock_flight):
         """When a new flight is detected, play_alert should be called."""
@@ -140,7 +140,7 @@ class TestPollOnce:
             # First poll: populate seen
             mock_fr_api.get_flights.return_value = [mock_flight]
             mock_fr_api.get_flight_details.return_value = MagicMock()
-            _poll_once(MagicMock(), "Test Airport", 5000)
+            _poll_once(MagicMock(), 23.3, 85.3, "Test Airport", 5000)
 
             # Second poll with new flight
             new_flight = MagicMock(id="brand_new", callsign="AI999")
@@ -151,7 +151,7 @@ class TestPollOnce:
             new_flight.ground_speed = 300
 
             mock_fr_api.get_flights.return_value = [new_flight]
-            _poll_once(MagicMock(), "Test Airport", 5000)
+            _poll_once(MagicMock(), 23.3, 85.3, "Test Airport", 5000)
             mock_alert.assert_called_once()
 
 
