@@ -87,7 +87,9 @@ def _poll_once(bounds, airport_name, radius_meters):
     flights = fr_api.get_flights(bounds=bounds)
 
     if not flights:
-        print(f"No flights currently found within {radius_meters}m radius of {airport_name}.")
+        print(
+            f"No flights currently found within {radius_meters}m radius of {airport_name}."
+        )
         print(SEPARATOR)
         return
 
@@ -104,7 +106,9 @@ def _poll_once(bounds, airport_name, radius_meters):
             print(f"[INFO] New flight entered radius: {flight.id}")
             print(SEPARATOR)
 
-        name, departure_airport, aircraft_type, altitude, incline_label = _get_flight_details(flight)
+        name, departure_airport, aircraft_type, altitude, incline_label = (
+            _get_flight_details(flight)
+        )
         _print_flight(name, departure_airport, aircraft_type, altitude, incline_label)
 
     if new_flight_detected:

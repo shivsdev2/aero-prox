@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+*.egg-info/
+.eggs/
+.pre-commit-config.yaml.bak
+.ruff_cache/

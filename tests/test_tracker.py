@@ -18,7 +18,6 @@ from src.tracker import (
     _poll_once,
     play_alert,
     run_tracking,
-    seen_flight_ids,
 )
 
 
@@ -28,6 +27,7 @@ class TestPlayAlert:
     def test_windows_beep(self):
         """On Windows, play_alert should call winsound.MessageBeep()."""
         import src.tracker
+
         mock_winsound = MagicMock()
         with (
             patch("src.tracker.IS_WINDOWS", True),

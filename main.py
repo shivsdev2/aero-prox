@@ -14,7 +14,9 @@ SEPARATOR = "-" * 40
 
 def prompt_airport(airports: dict) -> dict:
     while True:
-        icao_code = input("Enter airport ICAO code (e.g. VERC for Ranchi): ").strip().upper()
+        icao_code = (
+            input("Enter airport ICAO code (e.g. VERC for Ranchi): ").strip().upper()
+        )
         airport = airports.get(icao_code)
         if airport:
             return airport
@@ -45,7 +47,9 @@ def main() -> None:
 
     print(f"\nStarting live tracking for {airport_name}...")
     print(f"Lat: {airport_lat}, Lon: {airport_lon}")
-    print(f"Checking for flights within {radius_meters} meters radius every 3 seconds...\n")
+    print(
+        f"Checking for flights within {radius_meters} meters radius every 3 seconds...\n"
+    )
     print(SEPARATOR)
 
     try:

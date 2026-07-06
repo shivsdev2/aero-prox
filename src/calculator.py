@@ -1,5 +1,5 @@
-import time
 import math
+import time
 
 NM_TO_FT = 6076.12
 ANGLE_THRESHOLD_DEG = 0.3  # below this, treat as level flight

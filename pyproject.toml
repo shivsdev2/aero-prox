@@ -1,0 +1,74 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "aero-prox"
+version = "1.1.1"
+description = "Track active flights within a specified radius of any airport using the FlightRadar24 API"
+readme = "README.md"
+license = {text = "GPL-3.0-only"}
+authors = [
+    {name = "Shivsdev2"},
+]
+keywords = ["flight-tracking", "flightradar24", "aviation", "airport"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Aviation Enthusiasts",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Utilities",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "airportsdata",
+    "FlightRadarAPI",
+]
+
+[project.urls]
+Homepage = "https://github.com/shivsdev2/aero-prox"
+Repository = "https://github.com/shivsdev2/aero-prox.git"
+Changelog = "https://github.com/shivsdev2/aero-prox/blob/main/CHANGELOG.md"
+
+[project.scripts]
+aero-prox = "main:main"
+
+[tool.ruff]
+# Target Python version for linting and formatting.
+target-version = "py310"
+
+# Include the source directories and the top-level main.py.
+include = ["*.py", "src/**/*.py", "tests/**/*.py"]
+
+[tool.ruff.lint]
+# Rules: E = pycodestyle errors, F = pyflakes, W = pycodestyle warnings
+#         I = isort, N = pep8-naming, UP = pyupgrade
+select = ["E", "F", "W", "I", "N", "UP"]
+ignore = [
+    "E501",  # line-too-long – let ruff-format handle wrapping
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+    "N802",  # allow function names starting with "test_"
+    "N803",  # allow argument names like "mock_fr_api"
+    "N806",  # allow non-lowercase variable names in tests
+]
+
+[tool.ruff.format]
+# Use double quotes to match project style (PEP 8 compatible).
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-v --tb=short"

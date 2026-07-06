@@ -50,6 +50,7 @@ class TestComputeInclineAngle:
         flight_id = "small_change"
         # Simulate a 3-second gap with a tiny altitude change via module state
         import src.calculator as calc
+
         now = time.time()
         calc.previous_altitudes[flight_id] = (now - 3, 30000)
         # 1 ft change over 3 seconds at 400 kt => ~2025 ft horizontal, angle ≈ 0.028°
