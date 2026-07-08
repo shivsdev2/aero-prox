@@ -25,12 +25,16 @@ class TestParseArgs:
         args = parse_args([])
         assert args.icao is None
         assert args.radius is None
+        assert args.lat is None
+        assert args.lon is None
 
     def test_icao_only(self):
         """Only --icao provided."""
         args = parse_args(["--icao", "VERC"])
         assert args.icao == "VERC"
         assert args.radius is None
+        assert args.lat is None
+        assert args.lon is None
 
     def test_radius_only(self):
         """Only --radius provided."""
@@ -48,6 +52,12 @@ class TestParseArgs:
         """argparse should reject non-integer radius."""
         with pytest.raises(SystemExit):
             parse_args(["--radius", "abc"])
+
+    def test_lat_lon_args(self):
+        """--lat and --lon should parse as floats."""
+        args = parse_args(["--lat", "23.34", "--lon", "85.31"])
+        assert args.lat == 23.34
+        assert args.lon == 85.31
 
 
 class TestPromptAirport:
@@ -140,7 +150,7 @@ class TestMainFunction:
         """
         with (
             patch("main.airportsdata.load", mock_airportsdata),
-            patch("builtins.input", side_effect=["VERC", "5000"]),
+            patch("builtins.input", side_effect=["VERC", "5000", "23.34", "85.31"]),
             patch("main.run_tracking") as mock_run_tracking,
             patch("main.sys.argv", ["prog"]),
         ):
@@ -149,18 +159,21 @@ class TestMainFunction:
             main()
 
         mock_run_tracking.assert_called_once()
+        call_kwargs = mock_run_tracking.call_args.kwargs
         args, _ = mock_run_tracking.call_args
         lat, lon, name, radius = args
         assert lat == 23.3147
         assert lon == 85.3217
         assert name == "Birsa Munda Airport"
         assert radius == 5000
+        assert call_kwargs.get("user_lat") == 23.34
+        assert call_kwargs.get("user_lon") == 85.31
 
     def test_keyboard_interrupt_handled(self, mock_airportsdata, capsys):
         """A KeyboardInterrupt during tracking should print 'Stopped by user.'"""
         with (
             patch("main.airportsdata.load", mock_airportsdata),
-            patch("builtins.input", side_effect=["VERC", "5000"]),
+            patch("builtins.input", side_effect=["VERC", "5000", "23.34", "85.31"]),
             patch("main.run_tracking", side_effect=KeyboardInterrupt),
             patch("main.sys.argv", ["prog"]),
         ):
@@ -175,7 +188,7 @@ class TestMainFunction:
         """An unexpected exception should print the error and exit."""
         with (
             patch("main.airportsdata.load", mock_airportsdata),
-            patch("builtins.input", side_effect=["VERC", "5000"]),
+            patch("builtins.input", side_effect=["VERC", "5000", "23.34", "85.31"]),
             patch("main.run_tracking", side_effect=RuntimeError("boom")),
             patch("main.sys.argv", ["prog"]),
             pytest.raises(SystemExit) as exc_info,
@@ -192,10 +205,20 @@ class TestMainFunction:
 
     def test_main_with_cli_args(self, mock_airportsdata, mock_fr_api):
         """
-        main() should accept --icao and --radius via sys.argv
-        and skip interactive prompts.
+        main() should accept --icao, --radius, --lat, --lon via sys.argv
+        and skip all interactive prompts.
         """
-        test_argv = ["prog", "--icao", "VERC", "--radius", "8000"]
+        test_argv = [
+            "prog",
+            "--icao",
+            "VERC",
+            "--radius",
+            "8000",
+            "--lat",
+            "23.34",
+            "--lon",
+            "85.31",
+        ]
         with (
             patch("main.airportsdata.load", mock_airportsdata),
             patch("main.run_tracking") as mock_run_tracking,
@@ -208,10 +231,13 @@ class TestMainFunction:
         mock_run_tracking.assert_called_once()
         args, _ = mock_run_tracking.call_args
         lat, lon, name, radius = args
+        call_kwargs = mock_run_tracking.call_args.kwargs
         assert lat == 23.3147
         assert lon == 85.3217
         assert name == "Birsa Munda Airport"
         assert radius == 8000
+        assert call_kwargs.get("user_lat") == 23.34
+        assert call_kwargs.get("user_lon") == 85.31
 
     def test_main_with_invalid_icao_cli_exits(self, mock_airportsdata):
         """main() should exit with error if --icao is not found."""
@@ -248,7 +274,7 @@ class TestMainFunction:
         test_argv = ["prog", "--icao", "VERC"]
         with (
             patch("main.airportsdata.load", mock_airportsdata),
-            patch("builtins.input", return_value="12000"),
+            patch("builtins.input", side_effect=["12000", "23.34", "85.31"]),
             patch("main.run_tracking") as mock_run_tracking,
             patch("main.sys.argv", test_argv),
         ):

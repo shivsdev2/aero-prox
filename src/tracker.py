@@ -87,6 +87,8 @@ def _poll_once(
     airport_name,
     radius_meters,
     logger: FlightLogger | None = None,
+    user_lat=None,
+    user_lon=None,
 ):
     """Run a single fetch-and-report cycle. Returns nothing; mutates module state."""
     global first_loop
@@ -141,8 +143,10 @@ def _poll_once(
     if new_flight_detected:
         play_alert()
 
-    # Print the Sky Compass report.
-    report = generate_compass_report(airport_lat, airport_lon, airport_name, flights)
+    # Print the Sky Compass report (relative to user location if provided).
+    compass_lat = user_lat if user_lat is not None else airport_lat
+    compass_lon = user_lon if user_lon is not None else airport_lon
+    report = generate_compass_report(compass_lat, compass_lon, airport_name, flights)
     print(report)
     print(SEPARATOR)
 
@@ -150,13 +154,21 @@ def _poll_once(
     first_loop = False
 
 
-def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
+def run_tracking(
+    airport_lat,
+    airport_lon,
+    airport_name,
+    radius_meters,
+    user_lat=None,
+    user_lon=None,
+):
     """
     1) Create a box around the given airport
     2) Get flights within those bounds
     3) Get info for each flight (callsign, departure airport, aircraft type)
     4) Log every flight to a CSV file
-    5) Loop every few seconds
+    5) Print Sky Compass report (relative to user location if provided)
+    6) Loop every few seconds
     """
     logger = FlightLogger(airport_name)
     log.info("Flight history CSV: %s", logger.filepath)
@@ -172,6 +184,8 @@ def run_tracking(airport_lat, airport_lon, airport_name, radius_meters):
                 airport_name,
                 radius_meters,
                 logger=logger,
+                user_lat=user_lat,
+                user_lon=user_lon,
             )
         except Exception as inner_e:
             print(f"Error fetching active flight list: {inner_e}")

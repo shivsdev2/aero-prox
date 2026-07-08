@@ -36,6 +36,17 @@ def prompt_radius() -> int:
             print("Please enter a positive whole number.\n")
 
 
+def prompt_coordinates(label: str) -> float:
+    """Prompt for a latitude or longitude value. Returns the float."""
+    while True:
+        raw = input(f"Enter your {label}: ").strip()
+        try:
+            value = float(raw)
+            return value
+        except ValueError:
+            print("Please enter a valid decimal number.\n")
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """Parse CLI arguments, falling back to interactive prompts when omitted."""
     parser = argparse.ArgumentParser(
@@ -54,6 +65,20 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         metavar="METERS",
         help="Radius in meters around the airport. Prompts interactively if omitted.",
+    )
+    parser.add_argument(
+        "--lat",
+        type=float,
+        default=None,
+        metavar="DEGREES",
+        help="Your current latitude (e.g. 23.34). Used for Sky Compass bearings. Prompts if omitted.",
+    )
+    parser.add_argument(
+        "--lon",
+        type=float,
+        default=None,
+        metavar="DEGREES",
+        help="Your current longitude (e.g. 85.31). Used for Sky Compass bearings. Prompts if omitted.",
     )
     return parser.parse_args(argv)
 
@@ -80,19 +105,37 @@ def main() -> None:
     else:
         radius_meters = prompt_radius()
 
+    # Resolve user coordinates for Sky Compass.
+    if args.lat is not None and args.lon is not None:
+        user_lat = args.lat
+        user_lon = args.lon
+    else:
+        print("\nSky Compass uses your location to tell you where to look.")
+        print("You can skip this by passing --lat and --lon.\n")
+        user_lat = prompt_coordinates("latitude")
+        user_lon = prompt_coordinates("longitude")
+
     airport_name = airport["name"]
     airport_lat = airport["lat"]
     airport_lon = airport["lon"]
 
     print(f"\nStarting live tracking for {airport_name}...")
-    print(f"Lat: {airport_lat}, Lon: {airport_lon}")
+    print(f"Airport coordinates: {airport_lat}, {airport_lon}")
+    print(f"Your coordinates:     {user_lat}, {user_lon}")
     print(
         f"Checking for flights within {radius_meters} meters radius every 3 seconds...\n"
     )
     print(SEPARATOR)
 
     try:
-        run_tracking(airport_lat, airport_lon, airport_name, radius_meters)
+        run_tracking(
+            airport_lat,
+            airport_lon,
+            airport_name,
+            radius_meters,
+            user_lat=user_lat,
+            user_lon=user_lon,
+        )
     except KeyboardInterrupt:
         print("\nStopped by user.")
     except Exception as e:

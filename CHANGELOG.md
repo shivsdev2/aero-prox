@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-07-06
+
+### Added
+- **Sky Compass:** New `src/sky_compass.py` module that generates natural-language sentences telling you where to look for each flight. Calculates bearing, distance, compass direction, flight level, and incline state relative to your current location.
+- **User Coordinates:** `main.py` now prompts for your latitude and longitude (or accepts `--lat`/`--lon` CLI arguments). The Sky Compass uses these coordinates to give accurate bearing and distance directions from *your* location. Falls back to airport coordinates if not provided.
+- **30 Sky Compass Tests:** Added `tests/test_sky_compass.py` with 29 tests covering bearing calculations, haversine distance, compass labels, distance/altitude/incline formatting, sentence generation, and full report generation.
+
+### Changed
+- `src/tracker.py`: `_poll_once()` and `run_tracking()` accept optional `user_lat`/`user_lon` parameters passed through to Sky Compass. Compass bearings are relative to the user's location when provided.
+- `main.py`: Added `--lat` and `--lon` CLI arguments and interactive prompts. `main()` passes user coordinates to `run_tracking()`.
+- Updated tests in `tests/test_main.py` and `tests/test_tracker.py` for the new parameters and prompts.
+
 ## [1.2.0] - 2026-07-06
 
 ### Added

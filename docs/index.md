@@ -36,6 +36,6 @@ Then follow the interactive prompts to enter an airport ICAO code and radius.
 
 ## Project Status
 
-**Version:** 1.2.0 | **Tests:** 55 passing | **Python:** 3.10–3.14
+**Version:** 2.0.0 | **Tests:** 86 passing | **Python:** 3.10–3.14
 
 [![CI](https://github.com/shivsdev2/aero-prox/actions/workflows/ci.yml/badge.svg)](https://github.com/shivsdev2/aero-prox/actions/workflows/ci.yml)
