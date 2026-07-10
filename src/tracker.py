@@ -3,6 +3,7 @@ import platform
 import time
 
 from FlightRadarAPI import FlightRadar24API
+from plyer import notification
 
 from src.calculator import compute_incline_angle
 from src.flight_logger import FlightLogger
@@ -34,6 +35,10 @@ fr_api = FlightRadar24API()
 # Tracks every flight id ever seen, to detect brand-new arrivals.
 seen_flight_ids = set()
 first_loop = True
+
+
+def send_notification(title, message):
+    notification.notify(title=title, message=message)
 
 
 def play_alert():
@@ -108,9 +113,11 @@ def _poll_once(
 
     current_ids = set()
     new_flight_detected = False
+    new_flights = list()
 
     for flight in flights:
         current_ids.add(flight.id)
+        new_flight_detected = False
 
         if not first_loop and flight.id not in seen_flight_ids:
             new_flight_detected = True
@@ -120,6 +127,9 @@ def _poll_once(
         name, departure_airport, aircraft_type, altitude, incline_label = (
             _get_flight_details(flight)
         )
+
+        if new_flight_detected:
+            new_flights.append(name)
 
         # Attach incline label to the flight object for Sky Compass.
         flight._incline_label = incline_label
@@ -140,8 +150,12 @@ def _poll_once(
                 incline_label=incline_label,
             )
 
-    if new_flight_detected:
+    if new_flights:
         play_alert()
+        sample_flights = ", ".join(new_flights[:3])
+        others = f" and {len(new_flights) - 3} others" if len(new_flights) > 3 else ""
+        send_notification(f"{len(new_flights)} new flight(s) entered radius", f"{sample_flights}{others}")
+
 
     # Print the Sky Compass report (relative to user location if provided).
     compass_lat = user_lat if user_lat is not None else airport_lat
