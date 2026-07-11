@@ -106,33 +106,34 @@ class TestPollOnce:
 
     def test_new_flight_detected(self, mock_fr_api, mock_flight, capsys):
         """A flight not in seen_flight_ids after first loop should trigger an alert."""
-        # First poll: populate seen_flight_ids
-        mock_fr_api.get_flights.return_value = [mock_flight]
-        mock_fr_api.get_flight_details.return_value = MagicMock()
-        _poll_once(
-            MagicMock(), 23.3, 85.3, "Test Airport", 5000, user_lat=23.3, user_lon=85.3
-        )
+        with patch("src.tracker.send_notification"):
+            # First poll: populate seen_flight_ids
+            mock_fr_api.get_flights.return_value = [mock_flight]
+            mock_fr_api.get_flight_details.return_value = MagicMock()
+            _poll_once(
+                MagicMock(), 23.3, 85.3, "Test Airport", 5000, user_lat=23.3, user_lon=85.3
+            )
 
-        # Second poll with a different flight
-        new_flight = MagicMock(
-            id="new_flight_456",
-            callsign="AI456",
-            number="AI456",
-            origin_airport_name="Mumbai Airport",
-            origin_airport_iata="BOM",
-            aircraft_model="Airbus A320",
-            aircraft_code="A320",
-            altitude=30000,
-            ground_speed=400,
-        )
-        mock_fr_api.get_flights.return_value = [new_flight]
-        captured = capsys.readouterr()  # discard first poll output
-        _poll_once(
-            MagicMock(), 23.3, 85.3, "Test Airport", 5000, user_lat=23.3, user_lon=85.3
-        )
-        captured = capsys.readouterr()
-        assert "New flight entered radius" in captured.out
-        assert "new_flight_456" in captured.out
+            # Second poll with a different flight
+            new_flight = MagicMock(
+                id="new_flight_456",
+                callsign="AI456",
+                number="AI456",
+                origin_airport_name="Mumbai Airport",
+                origin_airport_iata="BOM",
+                aircraft_model="Airbus A320",
+                aircraft_code="A320",
+                altitude=30000,
+                ground_speed=400,
+            )
+            mock_fr_api.get_flights.return_value = [new_flight]
+            captured = capsys.readouterr()  # discard first poll output
+            _poll_once(
+                MagicMock(), 23.3, 85.3, "Test Airport", 5000, user_lat=23.3, user_lon=85.3
+            )
+            captured = capsys.readouterr()
+            assert "New flight entered radius" in captured.out
+            assert "new_flight_456" in captured.out
 
     def test_api_error_propagates(self, mock_fr_api):
         """_poll_once does not catch API errors - they propagate to run_tracking."""
@@ -152,7 +153,10 @@ class TestPollOnce:
         """When a new flight is detected, play_alert should be called."""
         # This is tricky because play_alert is called inline.
         # We can verify it via the module's play_alert reference.
-        with patch("src.tracker.play_alert") as mock_alert:
+        with (
+            patch("src.tracker.play_alert") as mock_alert,
+            patch("src.tracker.send_notification"),
+        ):
             # First poll: populate seen
             mock_fr_api.get_flights.return_value = [mock_flight]
             mock_fr_api.get_flight_details.return_value = MagicMock()
