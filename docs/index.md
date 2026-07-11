@@ -26,8 +26,7 @@ cd aero-prox
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the tracker
-python main.py
+
 ```
 
 Then follow the interactive prompts to enter an airport ICAO code and radius.

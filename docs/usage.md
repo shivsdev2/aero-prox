@@ -5,14 +5,20 @@
 Run the tracker with no arguments to use interactive prompts:
 
 ```bash
-python main.py
+aero-prox
+```
+
+Or using Python module syntax:
+
+```bash
+python -m src.main
 ```
 
 You will be prompted for:
 
 1. **ICAO code** — The 4-letter airport identifier (e.g. `VERC` for Ranchi, `KJFK` for New York JFK)
 2. **Radius (meters)** — The detection radius around the airport
-
+3. 
 Example session:
 
 ```
@@ -41,13 +47,13 @@ You can supply `--icao` and `--radius` directly to skip interactive prompts:
 
 ```bash
 # Specify both
-python main.py --icao VERC --radius 5000
+aero-prox --icao VERC --radius 5000
 
 # Specify ICAO only (radius will prompt interactively)
-python main.py --icao KJFK
+aero-prox --icao KJFK
 
 # Specify radius only (ICAO will prompt interactively)
-python main.py --radius 10000
+aero-prox --radius 10000
 ```
 
 ### Argument Reference
@@ -61,11 +67,11 @@ Error handling:
 
 ```bash
 # Invalid ICAO
-$ python main.py --icao XXXX
+$ aero-prox --icao XXXX
 Error: ICAO code 'XXXX' not found.
 
 # Invalid radius
-$ python main.py --radius -100
+$ aero-prox --radius -100
 Error: radius must be a positive integer.
 ```
 

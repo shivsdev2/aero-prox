@@ -1,6 +1,6 @@
 # API Reference
 
-## Module: `main.py`
+## Module: `src.main`
 
 ### `parse_args(argv: list[str] | None = None) -> argparse.Namespace`
 

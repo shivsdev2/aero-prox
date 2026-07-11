@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 import pytest
 
-from main import parse_args, prompt_airport, prompt_radius
+from src.main import parse_args, prompt_airport, prompt_radius
 
 
 class TestParseArgs:
@@ -149,12 +149,12 @@ class TestMainFunction:
         without error and call run_tracking.
         """
         with (
-            patch("main.airportsdata.load", mock_airportsdata),
+            patch("src.main.airportsdata.load", mock_airportsdata),
             patch("builtins.input", side_effect=["VERC", "5000", "23.34", "85.31"]),
-            patch("main.run_tracking") as mock_run_tracking,
-            patch("main.sys.argv", ["prog"]),
+            patch("src.main.run_tracking") as mock_run_tracking,
+            patch("src.main.sys.argv", ["prog"]),
         ):
-            from main import main
+            from src.main import main
 
             main()
 
@@ -172,12 +172,12 @@ class TestMainFunction:
     def test_keyboard_interrupt_handled(self, mock_airportsdata, capsys):
         """A KeyboardInterrupt during tracking should print 'Stopped by user.'"""
         with (
-            patch("main.airportsdata.load", mock_airportsdata),
+            patch("src.main.airportsdata.load", mock_airportsdata),
             patch("builtins.input", side_effect=["VERC", "5000", "23.34", "85.31"]),
-            patch("main.run_tracking", side_effect=KeyboardInterrupt),
-            patch("main.sys.argv", ["prog"]),
+            patch("src.main.run_tracking", side_effect=KeyboardInterrupt),
+            patch("src.main.sys.argv", ["prog"]),
         ):
-            from main import main
+            from src.main import main
 
             main()
 
@@ -187,13 +187,13 @@ class TestMainFunction:
     def test_unexpected_exception_handled(self, mock_airportsdata):
         """An unexpected exception should print the error and exit."""
         with (
-            patch("main.airportsdata.load", mock_airportsdata),
+            patch("src.main.airportsdata.load", mock_airportsdata),
             patch("builtins.input", side_effect=["VERC", "5000", "23.34", "85.31"]),
-            patch("main.run_tracking", side_effect=RuntimeError("boom")),
-            patch("main.sys.argv", ["prog"]),
+            patch("src.main.run_tracking", side_effect=RuntimeError("boom")),
+            patch("src.main.sys.argv", ["prog"]),
             pytest.raises(SystemExit) as exc_info,
         ):
-            from main import main
+            from src.main import main
 
             main()
 
@@ -220,11 +220,11 @@ class TestMainFunction:
             "85.31",
         ]
         with (
-            patch("main.airportsdata.load", mock_airportsdata),
-            patch("main.run_tracking") as mock_run_tracking,
-            patch("main.sys.argv", test_argv),
+            patch("src.main.airportsdata.load", mock_airportsdata),
+            patch("src.main.run_tracking") as mock_run_tracking,
+            patch("src.main.sys.argv", test_argv),
         ):
-            from main import main
+            from src.main import main
 
             main()
 
@@ -243,11 +243,11 @@ class TestMainFunction:
         """main() should exit with error if --icao is not found."""
         test_argv = ["prog", "--icao", "ZZZZ", "--radius", "5000"]
         with (
-            patch("main.airportsdata.load", mock_airportsdata),
-            patch("main.sys.argv", test_argv),
+            patch("src.main.airportsdata.load", mock_airportsdata),
+            patch("src.main.sys.argv", test_argv),
             pytest.raises(SystemExit) as exc_info,
         ):
-            from main import main
+            from src.main import main
 
             main()
 
@@ -257,11 +257,11 @@ class TestMainFunction:
         """main() should exit with error if --radius is zero or negative."""
         test_argv = ["prog", "--icao", "VERC", "--radius", "0"]
         with (
-            patch("main.airportsdata.load", mock_airportsdata),
-            patch("main.sys.argv", test_argv),
+            patch("src.main.airportsdata.load", mock_airportsdata),
+            patch("src.main.sys.argv", test_argv),
             pytest.raises(SystemExit) as exc_info,
         ):
-            from main import main
+            from src.main import main
 
             main()
 
@@ -273,12 +273,12 @@ class TestMainFunction:
         """--icao supplied, but --radius should fall back to interactive prompt."""
         test_argv = ["prog", "--icao", "VERC"]
         with (
-            patch("main.airportsdata.load", mock_airportsdata),
+            patch("src.main.airportsdata.load", mock_airportsdata),
             patch("builtins.input", side_effect=["12000", "23.34", "85.31"]),
-            patch("main.run_tracking") as mock_run_tracking,
-            patch("main.sys.argv", test_argv),
+            patch("src.main.run_tracking") as mock_run_tracking,
+            patch("src.main.sys.argv", test_argv),
         ):
-            from main import main
+            from src.main import main
 
             main()
 

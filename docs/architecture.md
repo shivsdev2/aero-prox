@@ -4,8 +4,8 @@
 
 ```
 aero-prox/
-├── main.py                 # Entry point: CLI parsing + interactive prompts
 ├── src/
+    ├── main.py             # Entry point 
 │   ├── __init__.py         # Package marker
 │   ├── calculator.py       # Incline/decline angle computation
 │   ├── flight_logger.py    # CSV flight history logging
@@ -46,7 +46,7 @@ aero-prox/
 
 ## Module Responsibilities
 
-### `main.py`
+### `src/main.py`
 
 - Parses CLI arguments with `argparse`
 - Loads airport data via `airportsdata`

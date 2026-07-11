@@ -1,13 +1,23 @@
 import logging
 import platform
+import sys
 import time
 
 from FlightRadarAPI import FlightRadar24API
 from plyer import notification
 
-from src.calculator import compute_incline_angle
-from src.flight_logger import FlightLogger
-from src.sky_compass import generate_compass_report
+# Support both direct execution and module execution
+if __name__ == "__main__" and __package__ is None:
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from calculator import compute_incline_angle
+    from flight_logger import FlightLogger
+    from sky_compass import generate_compass_report
+else:
+    from src.calculator import compute_incline_angle
+    from src.flight_logger import FlightLogger
+    from src.sky_compass import generate_compass_report
 
 # Silence a harmless "failed to decode Content-Encoding=gzip" warning.
 # curl_cffi already auto-decompresses responses, so FlightRadarAPI's own
@@ -155,7 +165,6 @@ def _poll_once(
         sample_flights = ", ".join(new_flights[:3])
         others = f" and {len(new_flights) - 3} others" if len(new_flights) > 3 else ""
         send_notification(f"{len(new_flights)} new flight(s) entered radius", f"{sample_flights}{others}")
-
 
     # Print the Sky Compass report (relative to user location if provided).
     compass_lat = user_lat if user_lat is not None else airport_lat

@@ -8,7 +8,15 @@ except ImportError:
     print("Install it with:  pip install airportsdata")
     sys.exit(1)
 
-from src.tracker import run_tracking
+# Support both direct execution and module execution
+if __name__ == "__main__" and __package__ is None:
+    # Running directly: add parent directory to path for imports
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).parent.parent))
+    from tracker import run_tracking
+else:
+    from src.tracker import run_tracking
 
 SEPARATOR = "-" * 40
 

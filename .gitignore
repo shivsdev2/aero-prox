@@ -6,3 +6,4 @@ __pycache__/
 .pre-commit-config.yaml.bak
 .ruff_cache/
 flight_logs/
+.env

@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [2.1.0] - 2026-07-11
+
+### Added
+- **Desktop Notifications:** Added cross-platform desktop notifications via `plyer` when a new flight enters the tracking radius. Shows flight count and callsigns on Windows, macOS, and Linux.
+
+### Changed
+- **Module Structure:** Moved `main.py` from project root to `src/main.py` for proper package organization. All internal imports updated to use `src.` module paths.
+- `pyproject.toml`: Updated console script entry point from `main:main` to `src.main:main`.
+- `src/main.py`: Updated import to use `from src.tracker import run_tracking`.
+- `src/tracker.py`: Updated imports to use `src.calculator`, `src.flight_logger`, and `src.sky_compass` module paths.
+- `tests/test_main.py`: Updated all mock patch paths from `main.*` to `src.main.*`.
+- `docs/api.md`: Updated module reference from `main.py` to `src.main`.
+- `docs/usage.md`: Updated usage examples to use `aero-prox` command and `python -m src.main`.
+- `docs/index.md`: Updated quick start to use `aero-prox` command.
+
 ## [2.0.0] - 2026-07-06
 
 ### Added

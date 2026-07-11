@@ -4,7 +4,7 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
 name = "aero-prox"
-version = "2.0.0"
+version = "2.1.0"
 description = "Track active flights within a specified radius of any airport using the FlightRadar24 API"
 readme = "README.md"
 license = {text = "GPL-3.0-only"}
@@ -38,13 +38,13 @@ Repository = "https://github.com/shivsdev2/aero-prox.git"
 Changelog = "https://github.com/shivsdev2/aero-prox/blob/main/CHANGELOG.md"
 
 [project.scripts]
-aero-prox = "main:main"
+aero-prox = "src.main:main"
 
 [tool.ruff]
 # Target Python version for linting and formatting.
 target-version = "py310"
 
-# Include the source directories and the top-level main.py.
+# Include the source directories.
 include = ["*.py", "src/**/*.py", "tests/**/*.py"]
 
 [tool.ruff.lint]
