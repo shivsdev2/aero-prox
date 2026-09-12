@@ -6,4 +6,5 @@ __pycache__/
 .pre-commit-config.yaml.bak
 .ruff_cache/
 flight_logs/
+live_map.html
 .env

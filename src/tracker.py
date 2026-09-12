@@ -13,10 +13,12 @@ if __name__ == "__main__" and __package__ is None:
     sys.path.insert(0, str(Path(__file__).parent.parent))
     from calculator import compute_incline_angle
     from flight_logger import FlightLogger
+    from live_map import LiveMap
     from sky_compass import generate_compass_report
 else:
     from src.calculator import compute_incline_angle
     from src.flight_logger import FlightLogger
+    from src.live_map import LiveMap
     from src.sky_compass import generate_compass_report
 
 # Silence a harmless "failed to decode Content-Encoding=gzip" warning.
@@ -102,6 +104,7 @@ def _poll_once(
     airport_name,
     radius_meters,
     logger: FlightLogger | None = None,
+    live_map: LiveMap | None = None,
     user_lat=None,
     user_lon=None,
 ):
@@ -116,6 +119,8 @@ def _poll_once(
         print(
             f"No flights currently found within {radius_meters}m radius of {airport_name}."
         )
+        if live_map is not None:
+            live_map.update([], timestamp)
         print(SEPARATOR)
         return
 
@@ -173,6 +178,9 @@ def _poll_once(
     print(report)
     print(SEPARATOR)
 
+    if live_map is not None:
+        live_map.update(flights, timestamp)
+
     seen_flight_ids.update(current_ids)
     first_loop = False
 
@@ -196,6 +204,9 @@ def run_tracking(
     logger = FlightLogger(airport_name)
     log.info("Flight history CSV: %s", logger.filepath)
 
+    live_map = LiveMap(airport_lat, airport_lon, airport_name, radius_meters)
+    log.info("Live map HTML: %s", live_map.filepath)
+
     bounds = fr_api.get_bounds_by_point(airport_lat, airport_lon, radius_meters)
 
     while True:
@@ -207,6 +218,7 @@ def run_tracking(
                 airport_name,
                 radius_meters,
                 logger=logger,
+                live_map=live_map,
                 user_lat=user_lat,
                 user_lon=user_lon,
             )

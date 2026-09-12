@@ -133,6 +133,7 @@ def main() -> None:
     print(
         f"Checking for flights within {radius_meters} meters radius every 3 seconds...\n"
     )
+    print("Live map will be written to live_map.html (open in a browser).\n")
     print(SEPARATOR)
 
     try:
